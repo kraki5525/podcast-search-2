@@ -17,14 +17,13 @@ function parseCategory(html) {
 }
 
 async function main() {
-    const category = await go('https://itunes.apple.com/us/genre/podcasts-health-sexuality/id1421', parseCategory);
+    const category = await go('https://itunes.apple.com/us/genre/podcasts-society-culture-history/id1462', parseCategory);
     const alphaPagePromises = category.links
                             .map(link => go(link, parseAlpha));
     const alphaPages = await Promise.all(alphaPagePromises);    
     const podcastLinks = alphaPages
                             .map(alphaPage => alphaPage.links);
     console.log(podcastLinks);
-    // var podcastPagesPromise = 
 }
 
 main();
