@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const request = require('request-promise-native');
 const AlphaPage = require('./alphaPage')
 const CategoryPage = require('./categoryPage')
@@ -23,7 +24,10 @@ async function main() {
     const alphaPages = await Promise.all(alphaPagePromises);    
     const podcastLinks = alphaPages
                             .map(alphaPage => alphaPage.links);
-    console.log(podcastLinks);
+    const batches = _.chunk(podcastLinks, 10);
+    for(var batch of batches) {
+
+    }    
 }
 
 main();
