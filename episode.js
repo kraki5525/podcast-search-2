@@ -6,9 +6,10 @@ class Episode {
         const selector = $(`tr[adam-id="${adamId}"]`)
 
         this.adamId = adamId;
-        // this.episodeDescription = $('.name .text').text();
-        this.episodeReleaseDate = $('.release-date .text').text();
-        this.episodeTitle = $('.name .text').text();
+        this.episodeReleaseDate = selector.find('.release-date .text').text();
+        this.episodeTitle = selector.find('.name .text').text();
+
+        var js = $(`div[adam-id="${adamId}"]`).text();
     }
 
     get description() {
