@@ -1,3 +1,4 @@
+const {chunk, flatten} = require('lodash');
 const axios = require('axios');
 const AlphaPage = require('./alphaPage')
 const CategoryPage = require('./categoryPage')
@@ -28,12 +29,16 @@ async function main() {
     const alphaPages = await Promise.all(alphaPagePromises);
     const podcastLinksArrays = alphaPages
         .map(alphaPage => alphaPage.links);
-    const podcastLinks = [].concat(...podcastLinksArrays).slice(0, 10);
+    const podcastLinks = flatten(...podcastLinksArrays).slice(0, 10);
     const podcastPagePromises = podcastLinks
         .map(link => go(link, parsePodcast));
     const podcastPages = await Promise.all(podcastPagePromises);
 
-    console.log(podcastPages.map(p => p.episodes));
+    for (let x of podcastPages) {
+        if (x.title === "A.P. Government and Politics") {
+            console.log(x);
+        }
+    }
 }
 
 main();
