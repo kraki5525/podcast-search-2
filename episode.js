@@ -1,5 +1,5 @@
 const cheerio = require('cheerio');
-const reg = /\{.*\}/;
+const reg = /\{.*\}/s;
 
 class Episode {
     constructor(adamId, html) {
@@ -10,9 +10,8 @@ class Episode {
         let description = null;
         if (match) {
             let jsonString = match[0];
-            description = jsonString;
-            // let json = JSON.parse(jsonString);
-            // description = json.description;
+            let json = JSON.parse(jsonString);
+            description = json.description;
         }
 
         this.episodeDescription = description;
