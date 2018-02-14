@@ -8,6 +8,7 @@ module.exports = {
         "ecmaVersion": 2017
     },
     "rules": {
+        "no-console": "off",
         "indent": [
             "error",
             4
