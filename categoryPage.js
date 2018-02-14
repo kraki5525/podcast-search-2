@@ -10,7 +10,7 @@ class CategoryPage {
             .get();
     }
 
-    get alphLinks() {
+    get alphaLinks() {
         return this.links;
     }
 }
