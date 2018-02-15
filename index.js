@@ -1,8 +1,14 @@
 const axios = require('axios');
+const loki = require('lokijs');
+const util = require('util');
 const AlphaPage = require('./alphaPage');
 const CategoryPage = require('./categoryPage');
 const PodcastPage = require('./podcastPage');
 const ProcessQueue = require('./processQueue');
+
+const db = new loki('podcast.db');
+db.loadDatabase();
+const podcasts = db.addCollection('podcasts');
 
 async function go(link, action, queue) {
     const response = await axios.get(link);
@@ -11,7 +17,8 @@ async function go(link, action, queue) {
 }
 
 function parsePodcast(html) {
-    return new PodcastPage(html);
+    const podcast = new PodcastPage(html);
+    podcasts.insert(podcast);
 }
 
 function parseAlpha(html, queue) {
@@ -35,9 +42,10 @@ function sleep(milliseconds) {
 }
 
 async function main() {
-    let queue = new ProcessQueue(4);
+    const queue = new ProcessQueue(4);
 
-    queue.add({url: 'https://itunes.apple.com/us/genre/podcasts-society-culture-history/id1462', action: parseCategory});
+    // queue.add({url: 'https://itunes.apple.com/us/genre/podcasts-society-culture-history/id1462', action: parseCategory});
+    queue.add({url: 'https://itunes.apple.com/us/genre/podcasts-society-culture-history/id1462?mt=2&letter=Q', action: parseAlpha});
 
     for (let pages of queue.get()) {
         console.log(`${new Date(Date.now())} -  ${pages.length}`);
@@ -46,6 +54,9 @@ async function main() {
 
         await sleep(5000);
     }
+
+    db.saveDatabase();
+    db.close();
 }
 
 console.log('start');
