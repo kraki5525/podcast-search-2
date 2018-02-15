@@ -16,8 +16,16 @@ async function go(link, action, queue) {
     return action(response.data, queue);
 }
 
+function merge(base, extension) {
+    return base;
+}
+
 function parsePodcast(html) {
     const podcast = new PodcastPage(html);
+    const dbPodcast = podcasts.find({ url: podcast.url});
+    if (dbPodcast) {
+        podcast = merge(dbPodcast, podcast);
+    }
     podcasts.insert(podcast);
 }
 
