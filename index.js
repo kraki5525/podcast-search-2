@@ -1,6 +1,7 @@
 const axios = require('axios');
 const loki = require('lokijs');
 const util = require('util');
+const merge = require('deepmerge');
 const AlphaPage = require('./alphaPage');
 const CategoryPage = require('./categoryPage');
 const PodcastPage = require('./podcastPage');
@@ -16,16 +17,14 @@ async function go(link, action, queue) {
     return action(response.data, queue);
 }
 
-function merge(base, extension) {
-    return base;
-}
-
 function parsePodcast(html) {
-    const podcast = new PodcastPage(html);
     const dbPodcast = podcasts.find({ url: podcast.url});
+    let podcast = new PodcastPage(html);
+
     if (dbPodcast) {
-        podcast = merge(dbPodcast, podcast);
+        podcast = deepmerge(dbPodcast, podcast);
     }
+
     podcasts.insert(podcast);
 }
 
