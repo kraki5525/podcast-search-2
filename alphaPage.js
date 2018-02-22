@@ -9,10 +9,6 @@ class AlphaPage {
             })
             .get();
     }
-
-    get podcastLinks() {
-        return this.links;
-    }
 }
 
 module.exports = AlphaPage;

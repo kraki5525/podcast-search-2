@@ -9,10 +9,6 @@ class CategoryPage {
             })
             .get();
     }
-
-    get alphaLinks() {
-        return this.links;
-    }
 }
 
 module.exports = CategoryPage;

@@ -14,22 +14,22 @@ class Episode {
             description = json.description;
         }
 
-        this.episodeDescription = description;
+        this.description = description;
         this.adamId = adamId;
-        this.episodeReleaseDate = selector.find('.release-date .text').text();
-        this.episodeTitle = selector.find('.name .text').text();
+        this.releaseDate = selector.find('.release-date .text').text();
+        this.title = selector.find('.name .text').text();
     }
 
     get description() {
-        return this.episodeDescription;
+        return this.description;
     }
 
     get releaseDate() {
-        return this.episodeReleaseDate;
+        return this.releaseDate;
     }
 
     get title() {
-        return this.episodeTitle;
+        return this.title;
     }
 }
 

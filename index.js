@@ -1,7 +1,6 @@
 const axios = require('axios');
 const loki = require('lokijs');
-const util = require('util');
-const merge = require('deepmerge');
+const deepmerge = require('deepmerge');
 const AlphaPage = require('./alphaPage');
 const CategoryPage = require('./categoryPage');
 const PodcastPage = require('./podcastPage');
@@ -18,14 +17,21 @@ async function go(link, action, queue) {
 }
 
 function parsePodcast(html) {
-    const dbPodcast = podcasts.find({ url: podcast.url});
     let podcast = new PodcastPage(html);
+    const dbPodcast = podcasts.find({ podcastItunesLink: podcast.itunesLink});
 
-    if (dbPodcast) {
-        podcast = deepmerge(dbPodcast, podcast);
+    console.log(dbPodcast.length);
+    if (dbPodcast.length > 0) {
+        podcast = deepmerge(dbPodcast[0], podcast);
+        podcast.updated = new Date(Date.now());
+        podcasts.update(podcast);
     }
-
-    podcasts.insert(podcast);
+    else {
+        const date = new Date(Date.now());
+        podcast.created = date;
+        podcast.updated = date;
+        podcasts.insert(podcast);
+    }
 }
 
 function parseAlpha(html, queue) {
