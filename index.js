@@ -18,7 +18,7 @@ async function go(link, action, queue) {
 
 function parsePodcast(html) {
     let podcast = new PodcastPage(html);
-    const dbPodcast = podcasts.find({ podcastItunesLink: podcast.itunesLink});
+    const dbPodcast = podcasts.find({ itunesLink: podcast.itunesLink });
 
     console.log(dbPodcast.length);
     if (dbPodcast.length > 0) {
