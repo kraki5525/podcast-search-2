@@ -19,18 +19,6 @@ class Episode {
         this.releaseDate = selector.find('.release-date .text').text();
         this.title = selector.find('.name .text').text();
     }
-
-    get description() {
-        return this.description;
-    }
-
-    get releaseDate() {
-        return this.releaseDate;
-    }
-
-    get title() {
-        return this.title;
-    }
 }
 
 module.exports = Episode;
