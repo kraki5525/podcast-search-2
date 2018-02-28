@@ -7,8 +7,21 @@ const PodcastPage = require('./podcastPage');
 const ProcessQueue = require('./processQueue');
 
 const db = new loki('podcast.db');
-db.loadDatabase();
-const podcasts = db.addCollection('podcasts');
+let podcasts = null;
+
+db.loadDatabase({}, function(err) {
+    if (err)
+        console.log('error' + err);
+    else {
+        podcasts = db.getCollection('podcasts'); 
+        if (podcasts === null) {
+            podcasts = db.addCollection('podcasts');
+        }
+
+        console.log('start');
+        main();
+    }
+});
 
 async function go(link, action, queue) {
     const response = await axios.get(link);
@@ -20,7 +33,6 @@ function parsePodcast(html) {
     let podcast = new PodcastPage(html);
     const dbPodcast = podcasts.find({ itunesLink: podcast.itunesLink });
 
-    console.log(dbPodcast.length);
     if (dbPodcast.length > 0) {
         podcast = deepmerge(dbPodcast[0], podcast);
         podcast.updated = new Date(Date.now());
@@ -71,6 +83,3 @@ async function main() {
     db.saveDatabase();
     db.close();
 }
-
-console.log('start');
-main();
