@@ -36,14 +36,14 @@ function parsePodcast(html) {
 
 function parseAlpha(html, queue) {
     const page = new AlphaPage(html);
-    for (let link of page.podcastLinks) {
+    for (let link of page.links) {
         queue.add({url: link, action: parsePodcast});
     }
 }
 
 function parseCategory(html, queue) {
     const page = new CategoryPage(html);
-    for (let link of page.alphaLinks) {
+    for (let link of page.links) {
         queue.add({url: link, action: parseAlpha});
     }
 }
