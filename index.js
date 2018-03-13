@@ -6,6 +6,7 @@ const AlphaPage = require('./alphaPage');
 const CategoryPage = require('./categoryPage');
 const PodcastPage = require('./podcastPage');
 const ProcessQueue = require('./processQueue');
+const MessageNotification = require('./messageNotification');
 
 let podcasts = null;
 const db = new loki('podcast.db', {});
@@ -70,7 +71,6 @@ async function main() {
     queue.add({url: 'https://itunes.apple.com/us/genre/podcasts-society-culture-history/id1462?mt=2&letter=Q', action: parseAlpha});
 
     for (let pages of queue.get()) {
-        console.log(`${new Date(Date.now())} -  ${pages.length}`);
         let promises = pages.map(page => go(page.url, page.action, queue, messages));
         await Promise.all(promises);
 
