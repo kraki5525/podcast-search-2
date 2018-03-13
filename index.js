@@ -1,29 +1,18 @@
 const axios = require('axios');
 const loki = require('lokijs');
+const util = require('util');
 const deepmerge = require('deepmerge');
 const AlphaPage = require('./alphaPage');
 const CategoryPage = require('./categoryPage');
 const PodcastPage = require('./podcastPage');
 const ProcessQueue = require('./processQueue');
 
-const db = new loki('podcast.db');
 let podcasts = null;
+const db = new loki('podcast.db', {});
+const asyncLoadDatabase = util.promisify(db.loadDatabase).bind(db);
 
-db.loadDatabase({}, function(err) {
-    if (err)
-        console.log('error' + err);
-    else {
-        podcasts = db.getCollection('podcasts'); 
-        if (podcasts === null) {
-            podcasts = db.addCollection('podcasts');
-        }
-
-        console.log('start');
-        main();
-    }
-});
-
-async function go(link, action, queue) {
+async function go(link, action, queue, messages) {
+    messages.notify(`Fetching ${link}`);
     const response = await axios.get(link);
 
     return action(response.data, queue);
@@ -67,14 +56,22 @@ function sleep(milliseconds) {
 }
 
 async function main() {
+    await asyncLoadDatabase({});
+
+    podcasts = db.getCollection('podcasts'); 
+    if (podcasts === null) {
+        podcasts = db.addCollection('podcasts');
+    }
+
     const queue = new ProcessQueue(4);
+    const messages = new MessageNotification();
 
     // queue.add({url: 'https://itunes.apple.com/us/genre/podcasts-society-culture-history/id1462', action: parseCategory});
     queue.add({url: 'https://itunes.apple.com/us/genre/podcasts-society-culture-history/id1462?mt=2&letter=Q', action: parseAlpha});
 
     for (let pages of queue.get()) {
         console.log(`${new Date(Date.now())} -  ${pages.length}`);
-        let promises = pages.map(page => go(page.url, page.action, queue));
+        let promises = pages.map(page => go(page.url, page.action, queue, messages));
         await Promise.all(promises);
 
         await sleep(5000);
@@ -83,3 +80,5 @@ async function main() {
     db.saveDatabase();
     db.close();
 }
+
+main();
