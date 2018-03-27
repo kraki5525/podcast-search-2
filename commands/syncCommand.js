@@ -7,6 +7,7 @@ const CategoryPage = require('./categoryPage');
 const PodcastPage = require('./podcastPage');
 const ProcessQueue = require('./processQueue');
 const MessageNotification = require('./messageNotification');
+const BaseCommand = require('./baseCommand');
 
 let podcasts = null;
 const db = new loki('podcast.db', {});
@@ -56,20 +57,20 @@ function sleep(milliseconds) {
     });
 }
 const actions = {
-    "alpha": parseAlpha,
-    "category": parseCategory,
-    "podcast": parsePodcast
+    'alpha': parseAlpha,
+    'category': parseCategory,
+    'podcast': parsePodcast
 };
 
 function getAction(type) {
     const action = actions[type];
     if (!action) {
-        throw "Unknown page type";
+        throw 'Unknown page type';
     }
     return action;
 }
 
-class SyncCommand {
+class SyncCommand extends BaseCommand {
     async execute(page, type) {
         await asyncLoadDatabase({});
 
