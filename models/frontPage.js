@@ -1,7 +1,7 @@
-class CategoryPage {
+class FrontPage {
     constructor() {
         this.links = [];
     }
 }
 
-module.exports = CategoryPage;
+module.exports = FrontPage;

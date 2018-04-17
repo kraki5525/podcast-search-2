@@ -2,14 +2,17 @@ const axios = require('axios');
 const loki = require('lokijs');
 const util = require('util');
 const deepmerge = require('deepmerge');
-const AlphaPage = require('./alphaPage');
-const CategoryPage = require('./categoryPage');
-const PodcastPage = require('./podcastPage');
+const AlphaPageBuilder = require('./models/builders/alphaPageBuilder');
+const CategoryPageBuilder = require('./models/builders/categoryPageBuilder');
+const PodcastPageBuilder = require('./models/builders/podcastPageBuilder');
 const ProcessQueue = require('./processQueue');
 const MessageNotification = require('./messageNotification');
 const BaseCommand = require('./baseCommand');
 
 let podcasts = null;
+const alphaPageBuilder = new AlphaPageBuilder();
+const categoryPageBuilder = new CategoryPageBuilder();
+const podcastPageBuilder = new PodcastPageBuilder();
 const db = new loki('podcast.db', {});
 const asyncLoadDatabase = util.promisify(db.loadDatabase).bind(db);
 
@@ -21,7 +24,7 @@ async function go(link, action, queue, messages) {
 }
 
 function parsePodcast(html) {
-    let podcast = new PodcastPage(html);
+    let podcast = podcastPageBuilder.build(html);
     const dbPodcast = podcasts.find({ itunesLink: podcast.itunesLink });
 
     if (dbPodcast.length > 0) {
@@ -30,23 +33,20 @@ function parsePodcast(html) {
         podcasts.update(podcast);
     }
     else {
-        const date = new Date(Date.now());
-        podcast.created = date;
-        podcast.updated = date;
         podcasts.insert(podcast);
     }
 }
 
 function parseAlpha(html, queue) {
-    const page = new AlphaPage(html);
+    const page = alphaPageBuilder.build(html);
     for (let link of page.links) {
         queue.add({url: link, action: parsePodcast});
     }
 }
 
 function parseCategory(html, queue) {
-    const page = new CategoryPage(html);
-    for (let link of page.links) {
+    const page = categoryPageBuilder(html);
+    for (let link of page.alphaLinks) {
         queue.add({url: link, action: parseAlpha});
     }
 }
