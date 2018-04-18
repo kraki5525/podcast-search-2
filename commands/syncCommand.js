@@ -2,7 +2,7 @@ const axios = require('axios');
 const loki = require('lokijs');
 const util = require('util');
 const deepmerge = require('deepmerge');
-const BuilderFactory = require('../models/builder/builderFactory');
+const BuilderFactory = require('../models/builders/builderFactory');
 const PodcastPage = require('../models/podcastPage');
 const ProcessQueue = require('../processQueue');
 const MessageNotification = require('../messageNotification');
@@ -49,7 +49,7 @@ function getAction(url) {
     };
 }
 
-class SyncCommand extends BaseCommand {
+class SyncCommand {
     async execute(page = 'https://itunes.apple.com/us/genre/podcasts/id26?mt=2') {
         await asyncLoadDatabase({});
 
