@@ -50,7 +50,7 @@ function getAction(url) {
 }
 
 class SyncCommand extends BaseCommand {
-    async execute(page) {
+    async execute(page = 'https://itunes.apple.com/us/genre/podcasts/id26?mt=2') {
         await asyncLoadDatabase({});
 
         podcasts = db.getCollection('podcasts');
