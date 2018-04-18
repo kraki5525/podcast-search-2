@@ -1,4 +1,4 @@
-const SyncCommand = require('./syncCommand');
+const SyncCommand = require('./commands/syncCommand');
 
 
 async function main() {
