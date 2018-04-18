@@ -6,7 +6,6 @@ const BuilderFactory = require('../models/builders/builderFactory');
 const PodcastPage = require('../models/podcastPage');
 const ProcessQueue = require('../processQueue');
 const MessageNotification = require('../messageNotification');
-const BaseCommand = require('./baseCommand');
 const {sleep} = require('../utils');
 
 let podcasts = null;
