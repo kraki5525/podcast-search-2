@@ -2,17 +2,15 @@ const axios = require('axios');
 const loki = require('lokijs');
 const util = require('util');
 const deepmerge = require('deepmerge');
-const AlphaPageBuilder = require('./models/builders/alphaPageBuilder');
-const CategoryPageBuilder = require('./models/builders/categoryPageBuilder');
-const PodcastPageBuilder = require('./models/builders/podcastPageBuilder');
-const ProcessQueue = require('./processQueue');
-const MessageNotification = require('./messageNotification');
+const BuilderFactory = require('../models/builder/builderFactory');
+const PodcastPage = require('../models/podcastPage');
+const ProcessQueue = require('../processQueue');
+const MessageNotification = require('../messageNotification');
 const BaseCommand = require('./baseCommand');
+const {sleep} = require('../utils');
 
 let podcasts = null;
-const alphaPageBuilder = new AlphaPageBuilder();
-const categoryPageBuilder = new CategoryPageBuilder();
-const podcastPageBuilder = new PodcastPageBuilder();
+const builderFactory = new BuilderFactory();
 const db = new loki('podcast.db', {});
 const asyncLoadDatabase = util.promisify(db.loadDatabase).bind(db);
 
@@ -23,8 +21,7 @@ async function go(link, action, queue, messages) {
     return action(response.data, queue);
 }
 
-function parsePodcast(html) {
-    let podcast = podcastPageBuilder.build(html);
+function storePodcast(podcast) {
     const dbPodcast = podcasts.find({ itunesLink: podcast.itunesLink });
 
     if (dbPodcast.length > 0) {
@@ -37,41 +34,23 @@ function parsePodcast(html) {
     }
 }
 
-function parseAlpha(html, queue) {
-    const page = alphaPageBuilder.build(html);
-    for (let link of page.links) {
-        queue.add({url: link, action: parsePodcast});
-    }
-}
-
-function parseCategory(html, queue) {
-    const page = categoryPageBuilder(html);
-    for (let link of page.alphaLinks) {
-        queue.add({url: link, action: parseAlpha});
-    }
-}
-
-function sleep(milliseconds) {
-    return new Promise(resolve => {
-        setTimeout(resolve, milliseconds);
-    });
-}
-const actions = {
-    'alpha': parseAlpha,
-    'category': parseCategory,
-    'podcast': parsePodcast
-};
-
-function getAction(type) {
-    const action = actions[type];
-    if (!action) {
-        throw 'Unknown page type';
-    }
-    return action;
+function getAction(url) {
+    const builder = builderFactory.create(url);
+    return (html, queue) => {
+        const page = builder.build(html);
+        if (page instanceof PodcastPage) {
+            storePodcast(page);
+        }
+        else {
+            for (let link of page.links) {
+                queue.add({url: link, action: getAction(link)});
+            }
+        }
+    };
 }
 
 class SyncCommand extends BaseCommand {
-    async execute(page, type) {
+    async execute(page) {
         await asyncLoadDatabase({});
 
         podcasts = db.getCollection('podcasts');
@@ -82,7 +61,7 @@ class SyncCommand extends BaseCommand {
         const queue = new ProcessQueue(4);
         const messages = new MessageNotification();
 
-        queue.add({url: page, action: getAction(type)});
+        queue.add({url: page, action: getAction(page)});
 
         for (let pages of queue.get()) {
             let promises = pages.map(page => go(page.url, page.action, queue, messages));
