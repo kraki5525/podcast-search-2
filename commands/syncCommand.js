@@ -1,5 +1,6 @@
 const axios = require('axios');
 const loki = require('lokijs');
+const lfsa = require('../node_modules/lokijs/src/loki-fs-structured-adapter');
 const util = require('util');
 const deepmerge = require('deepmerge');
 const BuilderFactory = require('../models/builders/builderFactory');
@@ -10,7 +11,9 @@ const {sleep} = require('../utils');
 
 let podcasts = null;
 const builderFactory = new BuilderFactory();
-const db = new loki('podcast.db', {});
+const db = new loki('podcast.db', {
+    adapter: new lfsa()
+});
 const asyncLoadDatabase = util.promisify(db.loadDatabase).bind(db);
 
 async function go(link, action, queue, messages) {
