@@ -4,6 +4,7 @@ class PodcastPage {
         this.created = date;
         this.updated = date;
         this.author = '';
+        this.category = '';
         this.description = '';
         this.itunesLink = '';
         this.language = '';

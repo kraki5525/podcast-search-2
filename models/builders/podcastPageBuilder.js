@@ -33,6 +33,7 @@ class PodcastPageBuilder {
         podcast.updated = null;
 
         podcast.author = $('#title .left h2').text();
+        podcast.category = $(".genre a>span").text();
         podcast.description = $('.center-stack .product-review p').text();
         podcast.itunesLink = $('#left-stack .product>a')
             .eq(0)
