@@ -1,10 +1,14 @@
 const AlphaPageBuilder = require('./alphaPageBuilder');
+const AlphaNumberedBuilder = require('./alphaNumberedPageBuilder');
 const CategoryPageBuilder = require('./categoryPageBuilder');
 const FrontPageBuilder = require('./frontPageBuilder');
 const PodcastPageBuilder = require('./podcastPageBuilder');
 
 class BuilderFactory {
     create(link) {
+        if (link.includes('letter') && link.includes('page')) {
+            return new AlphaNumberedBuilder();
+        }
         if (link.includes('letter')) {
             return new AlphaPageBuilder();
         }
