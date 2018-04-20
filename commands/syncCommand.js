@@ -15,19 +15,19 @@ const db = new loki('podcast.db', {
 });
 const asyncLoadDatabase = util.promisify(db.loadDatabase).bind(db);
 
-async function go(page, queue, messages) {
-    const link = page.link;
+async function go(page, queue, messageNotification) {
+    const link = page.url;
     const action = page.action;
     const attempts = page.attempts;
     let response;
 
-    messages.notify(`Fetching ${link}, attempt ${attempts}`);
+    messageNotification.notify(`Fetching ${link}, attempt ${attempts}`);
     try {
         response = await axios.get(link);
     }
     catch (error) {
         if (attempts > 3) {
-            messages.notify(error);
+            messageNotification.notify(error);
         }
         else {
             page.attempts = page.attempts + 1;
@@ -61,7 +61,7 @@ function getAction(url) {
         }
         else {
             for (let link of page.links) {
-                queue.add({url: link, action: getAction(link)});
+                queue.add({url: link, action: getAction(link), attempts: 1});
             }
         }
     };
@@ -72,7 +72,12 @@ class SyncCommand {
         this.messages = messages;
     }
 
-    async execute(page = 'https://itunes.apple.com/us/genre/podcasts/id26?mt=2') {
+    async execute(page) {
+        if (!page) {
+            throw 'Page is required';
+        }
+
+        const messageNotification = this.messages;
         await asyncLoadDatabase({});
 
         podcasts = db.getCollection('podcasts');
@@ -85,7 +90,7 @@ class SyncCommand {
         queue.add({url: page, action: getAction(page), attempts: 1});
 
         for (let pages of queue.get()) {
-            let promises = pages.map(page => go(page.url, page.action, queue, this.messages));
+            let promises = pages.map(page => go(page, queue, messageNotification));
             await Promise.all(promises);
 
             await sleep(5000);
