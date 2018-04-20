@@ -9,10 +9,11 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.17.1",
+    "axios": "^0.18.0",
     "cheerio": "^1.0.0-rc.2",
-    "deepmerge": "^2.0.1",
-    "lodash": "^4.17.4",
-    "lokijs": "^1.5.2"
+    "commander": "^2.15.1",
+    "deepmerge": "^2.1.0",
+    "lodash": "^4.17.5",
+    "lokijs": "^1.5.3"
   }
 }
