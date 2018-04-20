@@ -6,7 +6,6 @@ const deepmerge = require('deepmerge');
 const BuilderFactory = require('../models/builders/builderFactory');
 const PodcastPage = require('../models/podcastPage');
 const ProcessQueue = require('../processQueue');
-const MessageNotification = require('../messageNotification');
 const {sleep} = require('../utils');
 
 let podcasts = null;
@@ -16,9 +15,26 @@ const db = new loki('podcast.db', {
 });
 const asyncLoadDatabase = util.promisify(db.loadDatabase).bind(db);
 
-async function go(link, action, queue, messages) {
-    messages.notify(`Fetching ${link}`);
-    const response = await axios.get(link);
+async function go(page, queue, messages) {
+    const link = page.link;
+    const action = page.action;
+    const attempts = page.attempts;
+    let response;
+
+    messages.notify(`Fetching ${link}, attempt ${attempts}`);
+    try {
+        response = await axios.get(link);
+    }
+    catch (error) {
+        if (attempts > 3) {
+            messages.notify(error);
+        }
+        else {
+            page.attempts = page.attempts + 1;
+            queue.add(page);
+        }
+        return;
+    }
 
     return action(response.data, queue);
 }
@@ -52,6 +68,10 @@ function getAction(url) {
 }
 
 class SyncCommand {
+    constructor(messages) {
+        this.messages = messages;
+    }
+
     async execute(page = 'https://itunes.apple.com/us/genre/podcasts/id26?mt=2') {
         await asyncLoadDatabase({});
 
@@ -61,12 +81,11 @@ class SyncCommand {
         }
 
         const queue = new ProcessQueue(4);
-        const messages = new MessageNotification();
 
-        queue.add({url: page, action: getAction(page)});
+        queue.add({url: page, action: getAction(page), attempts: 1});
 
         for (let pages of queue.get()) {
-            let promises = pages.map(page => go(page.url, page.action, queue, messages));
+            let promises = pages.map(page => go(page.url, page.action, queue, this.messages));
             await Promise.all(promises);
 
             await sleep(5000);
