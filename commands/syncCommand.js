@@ -6,7 +6,7 @@ const deepmerge = require('deepmerge');
 const BuilderFactory = require('../models/builders/builderFactory');
 const PodcastPage = require('../models/podcastPage');
 const ProcessQueue = require('../services/processQueue');
-const {sleep} = require('../services/utils');
+const {sleepPromise} = require('../services/utils');
 
 let podcasts = null;
 const builderFactory = new BuilderFactory();
@@ -93,7 +93,7 @@ class SyncCommand {
             let promises = pages.map(page => go(page, queue, messageNotification));
             await Promise.all(promises);
 
-            await sleep(5000);
+            await sleepPromise(5000);
         }
 
         db.saveDatabase();
