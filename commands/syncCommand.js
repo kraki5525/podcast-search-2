@@ -5,8 +5,8 @@ const util = require('util');
 const deepmerge = require('deepmerge');
 const BuilderFactory = require('../models/builders/builderFactory');
 const PodcastPage = require('../models/podcastPage');
-const ProcessQueue = require('../processQueue');
-const {sleep} = require('../utils');
+const ProcessQueue = require('../services/processQueue');
+const {sleep} = require('../services/utils');
 
 let podcasts = null;
 const builderFactory = new BuilderFactory();

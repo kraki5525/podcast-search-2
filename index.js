@@ -1,6 +1,6 @@
 const program = require('commander');
 const SyncCommand = require('./commands/syncCommand');
-const MessageNotification = require('./messageNotification');
+const MessageNotification = require('./services/messageNotification');
 const messageNotification = new MessageNotification();
 
 program
