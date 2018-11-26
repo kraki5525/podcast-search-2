@@ -14,7 +14,7 @@
     "commander": "^2.15.1",
     "deepmerge": "^2.1.0",
     "lodash": "^4.17.5",
-    "lokijs": "^1.5.3"
+    "sqlite": "^3.0.0"
   },
   "devDependencies": {
     "mocha": "^5.2.0",

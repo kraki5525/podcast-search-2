@@ -1,19 +1,19 @@
 const axios = require('axios');
-const loki = require('lokijs');
-const lfsa = require('../node_modules/lokijs/src/loki-fs-structured-adapter');
-const util = require('util');
 const deepmerge = require('deepmerge');
+const fs = require('fs');
+const sqlite = require('sqlite');
+const util = require('util');
+
 const BuilderFactory = require('../models/builders/builderFactory');
 const PodcastPage = require('../models/podcastPage');
 const ProcessQueue = require('../services/processQueue');
 const {sleepPromise} = require('../services/utils');
 
-let podcasts = null;
 const builderFactory = new BuilderFactory();
-const db = new loki('podcast.db', {
-    adapter: new lfsa()
-});
-const asyncLoadDatabase = util.promisify(db.loadDatabase).bind(db);
+const promise = new Promise(function() {});
+const fileExists = util.promisify(fs.stat);
+const writeFile = util.promisify(fs.writeFile);
+let db;
 
 async function go(page, queue, messageNotification) {
     const link = page.url;
@@ -67,6 +67,17 @@ function getAction(url) {
     };
 }
 
+async function initializeDatabase() {
+    const exists = await fileExists('./podcast.data');
+    if (!exists) {
+        console.log('bang');
+    }
+    const dbPromise = sqlite.open('./podcast.data', {promise});
+    const localDb = await dbPromise;
+
+    return localDb;
+}
+
 class SyncCommand {
     constructor(messages) {
         this.messages = messages;
@@ -78,12 +89,14 @@ class SyncCommand {
         }
 
         const messageNotification = this.messages;
-        await asyncLoadDatabase({});
+        db = await initializeDatabase();
 
-        podcasts = db.getCollection('podcasts');
-        if (podcasts === null) {
-            podcasts = db.addCollection('podcasts');
-        }
+        return;
+
+        // podcasts = db.getCollection('podcasts');
+        // if (podcasts === null) {
+        //     podcasts = db.addCollection('podcasts');
+        // }
 
         const queue = new ProcessQueue(4);
 
@@ -96,7 +109,6 @@ class SyncCommand {
             await sleepPromise(5000);
         }
 
-        db.saveDatabase();
         db.close();
     }
 }
