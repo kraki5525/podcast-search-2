@@ -1,7 +1,7 @@
 const axios = require('axios');
 const deepmerge = require('deepmerge');
 const fs = require('fs');
-const sqlite = require('sqlite');
+const sqlite3 = require('sqlite3');
 const util = require('util');
 
 const BuilderFactory = require('../models/builders/builderFactory');
@@ -10,9 +10,8 @@ const ProcessQueue = require('../services/processQueue');
 const {sleepPromise} = require('../services/utils');
 
 const builderFactory = new BuilderFactory();
-const promise = new Promise(function() {});
 const fileExists = util.promisify(fs.stat);
-const writeFile = util.promisify(fs.writeFile);
+
 let db;
 
 async function go(page, queue, messageNotification) {
@@ -69,13 +68,23 @@ function getAction(url) {
 
 async function initializeDatabase() {
     const exists = await fileExists('./podcast.data');
-    if (!exists) {
-        console.log('bang');
-    }
-    const dbPromise = sqlite.open('./podcast.data', {promise});
-    const localDb = await dbPromise;
+    const promise = new Promise((resolve, reject) => {
+        const db = new sqlite3.Database('podcasts.data', (err) => {
+            if (err) {
+                reject(err);
+            }
 
-    return localDb;
+            if (!exists) {
+                db.serialize(() => {
+                    db.run('CREATE TABLE podcast(name TEXT, url TEXT)');
+                });
+            }
+
+            resolve(db);
+        });
+    });
+
+    return promise;
 }
 
 class SyncCommand {
